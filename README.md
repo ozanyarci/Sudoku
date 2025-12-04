@@ -1,5 +1,9 @@
 # Sudoku
 
+I solved one of them as an example. I solved the uniqueness problem. There shouldn't be more than one solution.
+<img width="753" height="857" alt="image" src="https://github.com/user-attachments/assets/82ecd0a5-f77a-4ce4-b88e-98ecc6dcde45" />
+
+
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.2.
 
 ## Development server
