@@ -29,7 +29,29 @@ export class SudokuService {
     readonly isComplete = computed(() => {
         const currentBoard = this.board();
         if (currentBoard.length === 0) return false;
-        return currentBoard.every(row => row.every(cell => cell.value !== null && cell.isValid));
+        return currentBoard.every(row => row.every(cell => cell.value !== null && cell.isValid && cell.isCorrect));
+    });
+
+    readonly remainingCounts = computed(() => {
+        const currentBoard = this.board();
+        const counts = new Map<number, number>();
+
+        // Initialize counts to 9
+        for (let i = 1; i <= 9; i++) {
+            counts.set(i, 9);
+        }
+
+        // Subtract placed numbers
+        currentBoard.forEach(row => {
+            row.forEach(cell => {
+                if (cell.value !== null && cell.value >= 1 && cell.value <= 9) {
+                    const currentCount = counts.get(cell.value) || 0;
+                    counts.set(cell.value, currentCount - 1);
+                }
+            });
+        });
+
+        return counts;
     });
 
     constructor() {
@@ -75,7 +97,7 @@ export class SudokuService {
 
             const newBoard = currentBoard.map(row => row.map(c => ({ ...c })));
             newBoard[selected.row][selected.col].value = value;
-            
+
             // Check against solution
             const correctValue = this.solution()[selected.row][selected.col];
             newBoard[selected.row][selected.col].isCorrect = value === correctValue;

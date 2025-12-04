@@ -3,10 +3,10 @@ import { CommonModule } from '@angular/common';
 import { SudokuService } from '../../services/sudoku.service';
 
 @Component({
-    selector: 'app-controls',
-    standalone: true,
-    imports: [CommonModule],
-    template: `
+  selector: 'app-controls',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
     <div class="controls">
       <div class="difficulty-selector">
         <span class="label">Difficulty:</span>
@@ -22,12 +22,15 @@ import { SudokuService } from '../../services/sudoku.service';
       <div class="numpad">
         <button *ngFor="let num of [1,2,3,4,5,6,7,8,9]" class="num-btn" (click)="fillNumber(num)">
           {{ num }}
+          <span class="count" *ngIf="sudokuService.remainingCounts().get(num) as count">
+            {{ count }}
+          </span>
         </button>
         <button class="num-btn delete" (click)="deleteNumber()">⌫</button>
       </div>
     </div>
   `,
-    styles: [`
+  styles: [`
     .controls {
       display: flex;
       flex-direction: column;
@@ -104,7 +107,19 @@ import { SudokuService } from '../../services/sudoku.service';
       cursor: pointer;
       transition: all 0.1s;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
     }
+
+    .count {
+      font-size: 0.7rem;
+      font-weight: 400;
+      margin-top: 2px;
+      opacity: 0.8;
 
     .num-btn:hover {
       background-color: var(--primary-color);
@@ -129,25 +144,25 @@ import { SudokuService } from '../../services/sudoku.service';
   `]
 })
 export class ControlsComponent {
-    sudokuService = inject(SudokuService);
+  sudokuService = inject(SudokuService);
 
-    newGame() {
-        this.sudokuService.startNewGame('easy');
-    }
+  newGame() {
+    this.sudokuService.startNewGame('easy');
+  }
 
-    resetGame() {
-        // For now, reset just starts a new game or we could implement board reset.
-        // Let's just start new game for simplicity as per plan.
-        if (confirm('Start a new game?')) {
-            this.sudokuService.startNewGame('easy');
-        }
+  resetGame() {
+    // For now, reset just starts a new game or we could implement board reset.
+    // Let's just start new game for simplicity as per plan.
+    if (confirm('Start a new game?')) {
+      this.sudokuService.startNewGame('easy');
     }
+  }
 
-    fillNumber(num: number) {
-        this.sudokuService.setCellValue(num);
-    }
+  fillNumber(num: number) {
+    this.sudokuService.setCellValue(num);
+  }
 
-    deleteNumber() {
-        this.sudokuService.clearCell();
-    }
+  deleteNumber() {
+    this.sudokuService.clearCell();
+  }
 }
