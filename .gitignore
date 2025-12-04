@@ -41,3 +41,27 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Angular specific (merged from remote)
+/e2e/test-output/
+/.angular/
+.angular/
+
+# Node modules and dependency files (merged from remote)
+/package-lock.json
+/yarn.lock
+
+# Environment files
+/.env
+
+# Angular CLI and build artefacts
+/.angular-cli.json
+/.ng/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
