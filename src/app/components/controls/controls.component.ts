@@ -151,10 +151,8 @@ export class ControlsComponent {
   }
 
   resetGame() {
-    // For now, reset just starts a new game or we could implement board reset.
-    // Let's just start new game for simplicity as per plan.
-    if (confirm('Start a new game?')) {
-      this.sudokuService.startNewGame('easy');
+    if (confirm('Are you sure you want to reset this puzzle? All your progress will be cleared.')) {
+      this.sudokuService.resetGame();
     }
   }
 

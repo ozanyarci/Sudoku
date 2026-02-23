@@ -131,6 +131,25 @@ export class SudokuService {
         this.updateHighlights(selected.row, selected.col);
     }
 
+    resetGame() {
+        this.board.update(currentBoard => {
+            const newBoard = currentBoard.map(row =>
+                row.map(cell => ({
+                    ...cell,
+                    value: cell.isFixed ? cell.value : null,
+                    isValid: true,
+                    isSelected: false,
+                    isRelated: false,
+                    isSameValue: false,
+                    isCorrect: cell.isFixed,
+                    isWrong: false,
+                }))
+            );
+            return newBoard;
+        });
+        this.selectedCell.set(null);
+    }
+
     private updateHighlights(selectedRow: number, selectedCol: number) {
         const currentBoard = this.board();
         const selectedValue = currentBoard[selectedRow][selectedCol].value;
