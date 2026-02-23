@@ -23,13 +23,21 @@ export class SudokuService {
     private solution = signal<number[][]>([]);
     private selectedCell = signal<{ row: number; col: number } | null>(null);
     private difficulty = signal<'easy' | 'medium' | 'hard'>('easy');
+    private gameStatus = signal<'not-started' | 'playing' | 'completed'>('not-started');
 
     // Computed
     readonly boardState = computed(() => this.board());
+    readonly currentDifficulty = computed(() => this.difficulty());
+    readonly status = computed(() => this.gameStatus());
     readonly isComplete = computed(() => {
         const currentBoard = this.board();
-        if (currentBoard.length === 0) return false;
-        return currentBoard.every(row => row.every(cell => cell.value !== null && cell.isValid && cell.isCorrect));
+        if (currentBoard.length === 0 || this.gameStatus() === 'not-started') return false;
+        const complete = currentBoard.every(row => row.every(cell => cell.value !== null && cell.isValid && cell.isCorrect));
+        if (complete && this.gameStatus() === 'playing') {
+            // We can't set signals in computed, but we can return the state
+            return true;
+        }
+        return complete;
     });
 
     readonly remainingCounts = computed(() => {
@@ -55,11 +63,12 @@ export class SudokuService {
     });
 
     constructor() {
-        this.startNewGame();
+        // No automatic start
     }
 
     startNewGame(difficulty: 'easy' | 'medium' | 'hard' = 'easy') {
         this.difficulty.set(difficulty);
+        this.gameStatus.set('playing');
         const { solution, puzzle } = SudokuGenerator.generate(difficulty);
         this.solution.set(solution);
 
@@ -104,6 +113,13 @@ export class SudokuService {
             newBoard[selected.row][selected.col].isWrong = value !== correctValue;
 
             this.validateBoard(newBoard);
+
+            // Check completion
+            const complete = newBoard.every(row => row.every(cell => cell.value !== null && cell.isValid && cell.isCorrect));
+            if (complete) {
+                this.gameStatus.set('completed');
+            }
+
             return newBoard;
         });
 
@@ -148,6 +164,12 @@ export class SudokuService {
             return newBoard;
         });
         this.selectedCell.set(null);
+        this.gameStatus.set('playing');
+    }
+
+    showStartScreen() {
+        this.gameStatus.set('not-started');
+        this.board.set([]);
     }
 
     private updateHighlights(selectedRow: number, selectedCol: number) {

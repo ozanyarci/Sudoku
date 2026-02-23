@@ -1,17 +1,17 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, TitleCasePipe } from '@angular/common';
 import { SudokuService } from '../../services/sudoku.service';
 
 @Component({
   selector: 'app-controls',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TitleCasePipe],
   template: `
     <div class="controls">
-      <div class="difficulty-selector">
-        <span class="label">Difficulty:</span>
-        <button class="btn active">Easy</button>
-        <!-- Future: Add Medium/Hard buttons here -->
+      <div class="game-info">
+        <span class="difficulty-badge" [class]="sudokuService.currentDifficulty()">
+          {{ sudokuService.currentDifficulty() | titlecase }}
+        </span>
       </div>
       
       <div class="actions">
@@ -40,13 +40,26 @@ import { SudokuService } from '../../services/sudoku.service';
       max-width: 450px;
     }
 
-    .difficulty-selector {
+    .game-info {
       display: flex;
-      align-items: center;
-      gap: 10px;
       justify-content: center;
-      color: var(--text-secondary);
+      margin-bottom: 5px;
     }
+
+    .difficulty-badge {
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+    }
+
+    .difficulty-badge.easy { color: #4cd137; border-color: rgba(76, 209, 55, 0.3); background: rgba(76, 209, 55, 0.05); }
+    .difficulty-badge.medium { color: #fbc531; border-color: rgba(251, 197, 49, 0.3); background: rgba(251, 197, 49, 0.05); }
+    .difficulty-badge.hard { color: #e84118; border-color: rgba(232, 65, 24, 0.3); background: rgba(232, 65, 24, 0.05); }
 
     .actions {
       display: flex;
@@ -147,7 +160,9 @@ export class ControlsComponent {
   sudokuService = inject(SudokuService);
 
   newGame() {
-    this.sudokuService.startNewGame('easy');
+    if (confirm('Go back to main menu? Your current progress will be lost.')) {
+      this.sudokuService.showStartScreen();
+    }
   }
 
   resetGame() {
