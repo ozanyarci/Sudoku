@@ -4,10 +4,10 @@ import { SudokuService } from '../../services/sudoku.service';
 import { CellComponent } from '../cell/cell.component';
 
 @Component({
-    selector: 'app-board',
-    standalone: true,
-    imports: [CommonModule, CellComponent],
-    template: `
+  selector: 'app-board',
+  standalone: true,
+  imports: [CommonModule, CellComponent],
+  template: `
     <div class="board-container">
       <div class="board">
         <div *ngFor="let row of sudokuService.boardState(); let r = index" class="row">
@@ -22,7 +22,7 @@ import { CellComponent } from '../cell/cell.component';
       </div>
     </div>
   `,
-    styles: [`
+  styles: [`
     .board-container {
       display: flex;
       justify-content: center;
@@ -34,7 +34,7 @@ import { CellComponent } from '../cell/cell.component';
       flex-direction: column;
       border: 2px solid var(--border-strong);
       border-radius: 8px;
-      overflow: hidden;
+      overflow-y: auto;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
       background-color: var(--bg-primary);
     }
@@ -67,19 +67,20 @@ import { CellComponent } from '../cell/cell.component';
   `]
 })
 export class BoardComponent {
-    sudokuService = inject(SudokuService);
+  sudokuService = inject(SudokuService);
 
-    onSelect(row: number, col: number) {
-        this.sudokuService.selectCell(row, col);
-    }
+  onSelect(row: number, col: number) {
+    if (this.sudokuService.status() !== 'playing') return;
+    this.sudokuService.selectCell(row, col);
+  }
 
-    @HostListener('window:keydown', ['$event'])
-    handleKeyboardEvent(event: KeyboardEvent) {
-        const key = event.key;
-        if (key >= '1' && key <= '9') {
-            this.sudokuService.setCellValue(parseInt(key, 10));
-        } else if (key === 'Backspace' || key === 'Delete') {
-            this.sudokuService.clearCell();
-        }
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    const key = event.key;
+    if (key >= '1' && key <= '9') {
+      this.sudokuService.setCellValue(parseInt(key, 10));
+    } else if (key === 'Backspace' || key === 'Delete') {
+      this.sudokuService.clearCell();
     }
+  }
 }

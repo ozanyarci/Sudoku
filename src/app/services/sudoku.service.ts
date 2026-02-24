@@ -23,12 +23,30 @@ export class SudokuService {
     private solution = signal<number[][]>([]);
     private selectedCell = signal<{ row: number; col: number } | null>(null);
     private difficulty = signal<'easy' | 'medium' | 'hard'>('easy');
-    private gameStatus = signal<'not-started' | 'playing' | 'completed'>('not-started');
+    private gameStatus = signal<'not-started' | 'playing' | 'completed' | 'lost'>('not-started');
+    private mistakeCount = signal<number>(0);
+    private elapsedTime = signal<number>(0);
+    private timerInterval: any = null;
+    private highScores = signal<{ easy: number; medium: number; hard: number }>({
+        easy: Infinity,
+        medium: Infinity,
+        hard: Infinity
+    });
 
     // Computed
     readonly boardState = computed(() => this.board());
     readonly currentDifficulty = computed(() => this.difficulty());
     readonly status = computed(() => this.gameStatus());
+    readonly mistakes = computed(() => this.mistakeCount());
+    readonly time = computed(() => this.elapsedTime());
+    readonly formattedTime = computed(() => {
+        const seconds = this.elapsedTime();
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    });
+    readonly bestScores = computed(() => this.highScores());
+
     readonly isComplete = computed(() => {
         const currentBoard = this.board();
         if (currentBoard.length === 0 || this.gameStatus() === 'not-started') return false;
@@ -63,12 +81,44 @@ export class SudokuService {
     });
 
     constructor() {
-        // No automatic start
+        this.loadHighScores();
+    }
+
+    private loadHighScores() {
+        const saved = localStorage.getItem('sudoku-high-scores');
+        if (saved) {
+            try {
+                this.highScores.set(JSON.parse(saved));
+            } catch (e) {
+                console.error('Failed to parse high scores', e);
+            }
+        }
+    }
+
+    private saveHighScores() {
+        localStorage.setItem('sudoku-high-scores', JSON.stringify(this.highScores()));
+    }
+
+    private startTimer() {
+        this.stopTimer();
+        this.elapsedTime.set(0);
+        this.timerInterval = setInterval(() => {
+            this.elapsedTime.update(t => t + 1);
+        }, 1000);
+    }
+
+    private stopTimer() {
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.timerInterval = null;
+        }
     }
 
     startNewGame(difficulty: 'easy' | 'medium' | 'hard' = 'easy') {
         this.difficulty.set(difficulty);
         this.gameStatus.set('playing');
+        this.mistakeCount.set(0);
+        this.startTimer();
         const { solution, puzzle } = SudokuGenerator.generate(difficulty);
         this.solution.set(solution);
 
@@ -97,6 +147,7 @@ export class SudokuService {
     }
 
     setCellValue(value: number) {
+        if (this.gameStatus() !== 'playing') return;
         const selected = this.selectedCell();
         if (!selected) return;
 
@@ -109,8 +160,17 @@ export class SudokuService {
 
             // Check against solution
             const correctValue = this.solution()[selected.row][selected.col];
-            newBoard[selected.row][selected.col].isCorrect = value === correctValue;
-            newBoard[selected.row][selected.col].isWrong = value !== correctValue;
+            const isCorrect = value === correctValue;
+            newBoard[selected.row][selected.col].isCorrect = isCorrect;
+            newBoard[selected.row][selected.col].isWrong = !isCorrect;
+
+            if (!isCorrect) {
+                this.mistakeCount.update(m => m + 1);
+                if (this.mistakeCount() >= 3) {
+                    this.gameStatus.set('lost');
+                    this.stopTimer();
+                }
+            }
 
             this.validateBoard(newBoard);
 
@@ -118,6 +178,8 @@ export class SudokuService {
             const complete = newBoard.every(row => row.every(cell => cell.value !== null && cell.isValid && cell.isCorrect));
             if (complete) {
                 this.gameStatus.set('completed');
+                this.stopTimer();
+                this.updateHighScore();
             }
 
             return newBoard;
@@ -127,7 +189,22 @@ export class SudokuService {
         this.updateHighlights(selected.row, selected.col);
     }
 
+    private updateHighScore() {
+        const diff = this.difficulty();
+        const currentTime = this.elapsedTime();
+        const currentBest = this.highScores()[diff];
+
+        if (currentTime < currentBest) {
+            this.highScores.update(scores => ({
+                ...scores,
+                [diff]: currentTime
+            }));
+            this.saveHighScores();
+        }
+    }
+
     clearCell() {
+        if (this.gameStatus() !== 'playing') return;
         const selected = this.selectedCell();
         if (!selected) return;
 
@@ -164,12 +241,22 @@ export class SudokuService {
             return newBoard;
         });
         this.selectedCell.set(null);
+        this.mistakeCount.set(0);
+        this.startTimer();
         this.gameStatus.set('playing');
     }
 
     showStartScreen() {
+        this.stopTimer();
         this.gameStatus.set('not-started');
         this.board.set([]);
+    }
+
+    formatTimeValue(seconds: number): string {
+        if (seconds === Infinity) return '---';
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
 
     private updateHighlights(selectedRow: number, selectedCol: number) {

@@ -23,15 +23,15 @@ import { SudokuService } from './services/sudoku.service';
             <div class="difficulty-options">
               <button class="diff-btn easy" (click)="startGame('easy')">
                 <span class="level">Easy</span>
-                <span class="desc">A relaxed way to enjoy the game</span>
+                <span class="desc">Best: {{ sudokuService.formatTimeValue(sudokuService.bestScores()['easy']) }}</span>
               </button>
               <button class="diff-btn medium" (click)="startGame('medium')">
                 <span class="level">Medium</span>
-                <span class="desc">A balanced challenge for starters</span>
+                <span class="desc">Best: {{ sudokuService.formatTimeValue(sudokuService.bestScores()['medium']) }}</span>
               </button>
               <button class="diff-btn hard" (click)="startGame('hard')">
                 <span class="level">Hard</span>
-                <span class="desc">For the true Sudoku masters</span>
+                <span class="desc">Best: {{ sudokuService.formatTimeValue(sudokuService.bestScores()['hard']) }}</span>
               </button>
             </div>
           </div>
@@ -39,6 +39,10 @@ import { SudokuService } from './services/sudoku.service';
       </ng-container>
 
       <ng-container *ngIf="sudokuService.status() !== 'not-started'">
+        <div class="game-timer">
+          <span class="timer-icon">⏱️</span>
+          <span class="timer-value">{{ sudokuService.formattedTime() }}</span>
+        </div>
         <app-board></app-board>
         <app-controls></app-controls>
       </ng-container>
@@ -46,10 +50,21 @@ import { SudokuService } from './services/sudoku.service';
       <div class="win-overlay" *ngIf="sudokuService.status() === 'completed'">
         <div class="win-message">
           <h2>🎉 You Won! 🎉</h2>
-          <p>Congratulations on completing the puzzle!</p>
+          <p>Congratulations! You solved it in <strong>{{ sudokuService.formattedTime() }}</strong>!</p>
           <div class="win-actions">
             <button class="btn primary" (click)="showStartScreen()">Main Menu</button>
             <button class="btn secondary" (click)="startGame(sudokuService.currentDifficulty())">Play Again</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="win-overlay lost" *ngIf="sudokuService.status() === 'lost'">
+        <div class="win-message">
+          <h2 class="lost-title">Game Over</h2>
+          <p>3 mistakes have been done. You lost.</p>
+          <div class="win-actions">
+            <button class="btn primary" (click)="showStartScreen()">Main Menu</button>
+            <button class="btn secondary" (click)="startGame(sudokuService.currentDifficulty())">Try Again</button>
           </div>
         </div>
       </div>
@@ -57,14 +72,16 @@ import { SudokuService } from './services/sudoku.service';
   `,
   styles: [`
     .app-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-      width: 100%;
-      max-width: 800px;
+      display: block;
+      width: 95%;
+      max-width: 500px;
+      margin: 40px auto;
+      padding: 40px 15px;
       position: relative;
-      min-height: 100vh;
+      background-color: var(--bg-primary);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      border-radius: 24px;
+      text-align: center; /* Ensure internal text remains centered */
     }
 
     header {
@@ -91,22 +108,19 @@ import { SudokuService } from './services/sudoku.service';
 
     /* Difficulty Selection */
     .difficulty-overlay {
-      display: flex;
-      justify-content: center;
-      align-items: center;
       width: 100%;
-      max-width: 500px;
-      margin-top: 40px;
+      max-width: 400px;
+      margin: 0 auto;
       animation: fadeIn 0.5s ease-out;
     }
 
     .difficulty-card {
       background-color: var(--bg-secondary);
-      padding: 40px;
+      padding: 40px 20px;
       border-radius: 24px;
       text-align: center;
       width: 100%;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
       border: 1px solid var(--border-color);
     }
 
@@ -167,19 +181,19 @@ import { SudokuService } from './services/sudoku.service';
       position: fixed;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
+      width: 100vw;
+      height: 100vh;
       background-color: rgba(0, 0, 0, 0.85);
       display: flex;
       justify-content: center;
       align-items: center;
-      z-index: 1000;
+      z-index: 9999;
       backdrop-filter: blur(10px);
     }
 
     .win-message {
       background-color: var(--bg-secondary);
-      padding: 50px;
+      padding: 40px 20px;
       border-radius: 24px;
       text-align: center;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
@@ -194,6 +208,12 @@ import { SudokuService } from './services/sudoku.service';
       background: linear-gradient(to right, #fbc531, #f1c40f);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+    }
+
+    .lost-title {
+      background: linear-gradient(to right, #e84118, #c23616) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
     }
 
     .win-actions {
@@ -217,6 +237,33 @@ import { SudokuService } from './services/sudoku.service';
     .btn.secondary { background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border-color); }
 
     .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+
+    .game-timer {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin: 0 auto 20px;
+      padding: 10px 24px;
+      background: var(--bg-secondary);
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      min-width: 140px;
+    }
+
+    .timer-icon {
+      font-size: 1.2rem;
+    }
+
+    .timer-value {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      min-width: 60px;
+      text-align: center;
+    }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes popIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
