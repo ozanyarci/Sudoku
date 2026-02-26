@@ -23,15 +23,15 @@ import { SudokuService } from './services/sudoku.service';
             <div class="difficulty-options">
               <button class="diff-btn easy" (click)="startGame('easy')">
                 <span class="level">Easy</span>
-                <span class="desc">Best: {{ sudokuService.formatTimeValue(sudokuService.bestScores()['easy']) }}</span>
+                <span class="desc">{{ sudokuService.bestScores()['easy'] === null ? 'No score yet' : 'Best: ' + sudokuService.formatTimeValue(sudokuService.bestScores()['easy']) }}</span>
               </button>
               <button class="diff-btn medium" (click)="startGame('medium')">
                 <span class="level">Medium</span>
-                <span class="desc">Best: {{ sudokuService.formatTimeValue(sudokuService.bestScores()['medium']) }}</span>
+                <span class="desc">{{ sudokuService.bestScores()['medium'] === null ? 'No score yet' : 'Best: ' + sudokuService.formatTimeValue(sudokuService.bestScores()['medium']) }}</span>
               </button>
               <button class="diff-btn hard" (click)="startGame('hard')">
                 <span class="level">Hard</span>
-                <span class="desc">Best: {{ sudokuService.formatTimeValue(sudokuService.bestScores()['hard']) }}</span>
+                <span class="desc">{{ sudokuService.bestScores()['hard'] === null ? 'No score yet' : 'Best: ' + sudokuService.formatTimeValue(sudokuService.bestScores()['hard']) }}</span>
               </button>
             </div>
           </div>

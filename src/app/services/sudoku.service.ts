@@ -27,10 +27,10 @@ export class SudokuService {
     private mistakeCount = signal<number>(0);
     private elapsedTime = signal<number>(0);
     private timerInterval: any = null;
-    private highScores = signal<{ easy: number; medium: number; hard: number }>({
-        easy: Infinity,
-        medium: Infinity,
-        hard: Infinity
+    private highScores = signal<{ easy: number | null; medium: number | null; hard: number | null }>({
+        easy: null,
+        medium: null,
+        hard: null
     });
 
     // Computed
@@ -88,7 +88,14 @@ export class SudokuService {
         const saved = localStorage.getItem('sudoku-high-scores');
         if (saved) {
             try {
-                this.highScores.set(JSON.parse(saved));
+                const parsed = JSON.parse(saved);
+                // Sanitize: convert 0 or null to null to fix the "0:00" bug
+                const sanitized = {
+                    easy: (parsed.easy && parsed.easy > 0) ? parsed.easy : null,
+                    medium: (parsed.medium && parsed.medium > 0) ? parsed.medium : null,
+                    hard: (parsed.hard && parsed.hard > 0) ? parsed.hard : null,
+                };
+                this.highScores.set(sanitized);
             } catch (e) {
                 console.error('Failed to parse high scores', e);
             }
@@ -194,7 +201,7 @@ export class SudokuService {
         const currentTime = this.elapsedTime();
         const currentBest = this.highScores()[diff];
 
-        if (currentTime < currentBest) {
+        if (currentBest === null || currentTime < currentBest) {
             this.highScores.update(scores => ({
                 ...scores,
                 [diff]: currentTime
@@ -252,8 +259,8 @@ export class SudokuService {
         this.board.set([]);
     }
 
-    formatTimeValue(seconds: number): string {
-        if (seconds === Infinity) return '---';
+    formatTimeValue(seconds: number | null): string {
+        if (seconds === null) return 'No score yet';
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
         return `${mins}:${secs.toString().padStart(2, '0')}`;
