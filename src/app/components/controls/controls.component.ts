@@ -29,6 +29,9 @@ import { SudokuService } from '../../services/sudoku.service';
             {{ count }}
           </span>
         </button>
+        <button class="num-btn pencil" [class.active]="sudokuService.isNoteMode()" (click)="sudokuService.toggleNoteMode()">
+          ✏️
+        </button>
         <button class="num-btn delete" (click)="deleteNumber()">⌫</button>
       </div>
     </div>
@@ -124,9 +127,15 @@ import { SudokuService } from '../../services/sudoku.service';
       color: white;
     }
 
+    .num-btn.active {
+      background-color: var(--primary-color);
+      color: white;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    }
+
     .numpad {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 10px;
       margin-top: 10px;
     }
@@ -170,6 +179,10 @@ import { SudokuService } from '../../services/sudoku.service';
     .delete {
       color: var(--error-color);
       font-size: 1.5rem;
+    }
+
+    .pencil {
+        font-size: 1.2rem;
     }
   `]
 })

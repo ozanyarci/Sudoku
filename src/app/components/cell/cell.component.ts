@@ -18,7 +18,16 @@ import { Cell } from '../../services/sudoku.service';
       [class.invalid]="!cell.isValid"
       (click)="select.emit()"
     >
-      {{ cell.value }}
+      <ng-container *ngIf="cell.value; else notesTemplate">
+        {{ cell.value }}
+      </ng-container>
+      <ng-template #notesTemplate>
+        <div class="notes-grid" *ngIf="cell.notes.length > 0">
+          <div *ngFor="let n of [1,2,3,4,5,6,7,8,9]" class="note">
+            {{ cell.notes.includes(n) ? n : '' }}
+          </div>
+        </div>
+      </ng-template>
     </div>
   `,
   styles: [`
@@ -37,6 +46,7 @@ import { Cell } from '../../services/sudoku.service';
       background-color: var(--bg-secondary);
       border-right: 1px solid var(--border-color);
       border-bottom: 1px solid var(--border-color);
+      position: relative;
     }
 
     .cell:hover {
@@ -74,6 +84,29 @@ import { Cell } from '../../services/sudoku.service';
     .invalid {
       color: var(--error-color);
       background-color: var(--error-bg);
+    }
+
+    .notes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      width: 100%;
+      height: 100%;
+      padding: 2px;
+    }
+
+    .note {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      color: var(--text-secondary);
+      line-height: 1;
+    }
+
+    .selected .note {
+        color: var(--selected-text);
+        opacity: 0.8;
     }
   `]
 })

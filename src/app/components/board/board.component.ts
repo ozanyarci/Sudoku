@@ -81,6 +81,8 @@ export class BoardComponent {
       this.sudokuService.setCellValue(parseInt(key, 10));
     } else if (key === 'Backspace' || key === 'Delete') {
       this.sudokuService.clearCell();
+    } else if (key.toLowerCase() === 'n') {
+      this.sudokuService.toggleNoteMode();
     }
   }
 }

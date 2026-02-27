@@ -12,6 +12,7 @@ export interface Cell {
     isSameValue: boolean; // Same value as selected
     isCorrect: boolean;
     isWrong: boolean;
+    notes: number[];
 }
 
 @Injectable({
@@ -27,6 +28,7 @@ export class SudokuService {
     private mistakeCount = signal<number>(0);
     private elapsedTime = signal<number>(0);
     private timerInterval: any = null;
+    private noteMode = signal<boolean>(false);
     private highScores = signal<{ easy: number | null; medium: number | null; hard: number | null }>({
         easy: null,
         medium: null,
@@ -39,6 +41,7 @@ export class SudokuService {
     readonly status = computed(() => this.gameStatus());
     readonly mistakes = computed(() => this.mistakeCount());
     readonly time = computed(() => this.elapsedTime());
+    readonly isNoteMode = computed(() => this.noteMode());
     readonly formattedTime = computed(() => {
         const seconds = this.elapsedTime();
         const mins = Math.floor(seconds / 60);
@@ -141,6 +144,7 @@ export class SudokuService {
                 isSameValue: false,
                 isCorrect: val !== null, // Fixed cells are always correct
                 isWrong: false,
+                notes: [],
             }))
         );
 
@@ -153,6 +157,10 @@ export class SudokuService {
         this.updateHighlights(row, col);
     }
 
+    toggleNoteMode() {
+        this.noteMode.update(mode => !mode);
+    }
+
     setCellValue(value: number) {
         if (this.gameStatus() !== 'playing') return;
         const selected = this.selectedCell();
@@ -163,19 +171,34 @@ export class SudokuService {
             if (cell.isFixed) return currentBoard;
 
             const newBoard = currentBoard.map(row => row.map(c => ({ ...c })));
-            newBoard[selected.row][selected.col].value = value;
+            const targetCell = newBoard[selected.row][selected.col];
 
-            // Check against solution
-            const correctValue = this.solution()[selected.row][selected.col];
-            const isCorrect = value === correctValue;
-            newBoard[selected.row][selected.col].isCorrect = isCorrect;
-            newBoard[selected.row][selected.col].isWrong = !isCorrect;
+            if (this.noteMode()) {
+                // Note taking logic
+                if (targetCell.value !== null) return currentBoard; // Can't take notes on filled cell
 
-            if (!isCorrect) {
-                this.mistakeCount.update(m => m + 1);
-                if (this.mistakeCount() >= 3) {
-                    this.gameStatus.set('lost');
-                    this.stopTimer();
+                if (targetCell.notes.includes(value)) {
+                    targetCell.notes = targetCell.notes.filter(n => n !== value);
+                } else {
+                    targetCell.notes = [...targetCell.notes, value].sort();
+                }
+            } else {
+                // Normal value entry
+                targetCell.value = value;
+                targetCell.notes = []; // Clear notes when value is set
+
+                // Check against solution
+                const correctValue = this.solution()[selected.row][selected.col];
+                const isCorrect = value === correctValue;
+                targetCell.isCorrect = isCorrect;
+                targetCell.isWrong = !isCorrect;
+
+                if (!isCorrect) {
+                    this.mistakeCount.update(m => m + 1);
+                    if (this.mistakeCount() >= 3) {
+                        this.gameStatus.set('lost');
+                        this.stopTimer();
+                    }
                 }
             }
 
@@ -220,10 +243,12 @@ export class SudokuService {
             if (cell.isFixed) return currentBoard;
 
             const newBoard = currentBoard.map(row => row.map(c => ({ ...c })));
-            newBoard[selected.row][selected.col].value = null;
-            newBoard[selected.row][selected.col].isValid = true;
-            newBoard[selected.row][selected.col].isCorrect = false;
-            newBoard[selected.row][selected.col].isWrong = false;
+            const targetCell = newBoard[selected.row][selected.col];
+            targetCell.value = null;
+            targetCell.isValid = true;
+            targetCell.isCorrect = false;
+            targetCell.isWrong = false;
+            targetCell.notes = [];
 
             this.validateBoard(newBoard);
             return newBoard;
@@ -243,6 +268,7 @@ export class SudokuService {
                     isSameValue: false,
                     isCorrect: cell.isFixed,
                     isWrong: false,
+                    notes: [],
                 }))
             );
             return newBoard;
