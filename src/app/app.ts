@@ -33,6 +33,10 @@ import { SudokuService } from './services/sudoku.service';
                 <span class="level">Hard</span>
                 <span class="desc">{{ sudokuService.bestScores()['hard'] === null ? 'No score yet' : 'Best: ' + sudokuService.formatTimeValue(sudokuService.bestScores()['hard']) }}</span>
               </button>
+              <button class="diff-btn very-hard" (click)="startGame('very-hard')">
+                <span class="level">Very Hard</span>
+                <span class="desc">{{ sudokuService.bestScores()['very-hard'] === null ? 'No score yet' : 'Best: ' + sudokuService.formatTimeValue(sudokuService.bestScores()['very-hard']) }}</span>
+              </button>
             </div>
           </div>
         </div>
@@ -175,6 +179,7 @@ import { SudokuService } from './services/sudoku.service';
     .diff-btn.easy:hover { border-color: #4cd137; background: rgba(76, 209, 55, 0.05); }
     .diff-btn.medium:hover { border-color: #fbc531; background: rgba(251, 197, 49, 0.05); }
     .diff-btn.hard:hover { border-color: #e84118; background: rgba(232, 65, 24, 0.05); }
+    .diff-btn.very-hard:hover { border-color: #8e44ad; background: rgba(142, 68, 173, 0.05); }
 
     /* Win Message */
     .win-overlay {
@@ -273,7 +278,7 @@ export class App {
   title = 'sudoku-app';
   sudokuService = inject(SudokuService);
 
-  startGame(difficulty: 'easy' | 'medium' | 'hard') {
+  startGame(difficulty: 'easy' | 'medium' | 'hard' | 'very-hard') {
     this.sudokuService.startNewGame(difficulty);
   }
 

@@ -66,6 +66,7 @@ import { SudokuService } from '../../services/sudoku.service';
     .difficulty-badge.easy { color: #4cd137; border-color: rgba(76, 209, 55, 0.3); background: rgba(76, 209, 55, 0.05); }
     .difficulty-badge.medium { color: #fbc531; border-color: rgba(251, 197, 49, 0.3); background: rgba(251, 197, 49, 0.05); }
     .difficulty-badge.hard { color: #e84118; border-color: rgba(232, 65, 24, 0.3); background: rgba(232, 65, 24, 0.05); }
+    .difficulty-badge.very-hard { color: #8e44ad; border-color: rgba(142, 68, 173, 0.3); background: rgba(142, 68, 173, 0.05); }
 
     .mistakes-badge {
       margin-left: 10px;

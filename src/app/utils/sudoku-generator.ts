@@ -2,7 +2,7 @@ export class SudokuGenerator {
   private static readonly SIZE = 9;
   private static readonly BOX_SIZE = 3;
 
-  static generate(difficulty: 'easy' | 'medium' | 'hard' = 'easy'): {
+  static generate(difficulty: 'easy' | 'medium' | 'hard' | 'very-hard' = 'easy'): {
     solution: number[][];
     puzzle: (number | null)[][];
   } {
@@ -63,7 +63,7 @@ export class SudokuGenerator {
     const puzzle: number[][] = solution.map((row) => [...row]);
 
     // Target empty cells
-    let attempts = difficulty === 'easy' ? 40 : difficulty === 'medium' ? 50 : 55;
+    let attempts = difficulty === 'easy' ? 40 : difficulty === 'medium' ? 50 : difficulty === 'hard' ? 55 : 62;
 
     // Create a list of all positions
     const positions: number[] = Array.from({ length: 81 }, (_, i) => i);

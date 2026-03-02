@@ -23,16 +23,17 @@ export class SudokuService {
     private board = signal<Cell[][]>([]);
     private solution = signal<number[][]>([]);
     private selectedCell = signal<{ row: number; col: number } | null>(null);
-    private difficulty = signal<'easy' | 'medium' | 'hard'>('easy');
+    private difficulty = signal<'easy' | 'medium' | 'hard' | 'very-hard'>('easy');
     private gameStatus = signal<'not-started' | 'playing' | 'completed' | 'lost'>('not-started');
     private mistakeCount = signal<number>(0);
     private elapsedTime = signal<number>(0);
     private timerInterval: any = null;
     private noteMode = signal<boolean>(false);
-    private highScores = signal<{ easy: number | null; medium: number | null; hard: number | null }>({
+    private highScores = signal<{ easy: number | null; medium: number | null; hard: number | null; 'very-hard': number | null }>({
         easy: null,
         medium: null,
-        hard: null
+        hard: null,
+        'very-hard': null
     });
 
     // Computed
@@ -97,6 +98,7 @@ export class SudokuService {
                     easy: (parsed.easy && parsed.easy > 0) ? parsed.easy : null,
                     medium: (parsed.medium && parsed.medium > 0) ? parsed.medium : null,
                     hard: (parsed.hard && parsed.hard > 0) ? parsed.hard : null,
+                    'very-hard': (parsed['very-hard'] && parsed['very-hard'] > 0) ? parsed['very-hard'] : null,
                 };
                 this.highScores.set(sanitized);
             } catch (e) {
@@ -124,7 +126,7 @@ export class SudokuService {
         }
     }
 
-    startNewGame(difficulty: 'easy' | 'medium' | 'hard' = 'easy') {
+    startNewGame(difficulty: 'easy' | 'medium' | 'hard' | 'very-hard' = 'easy') {
         this.difficulty.set(difficulty);
         this.gameStatus.set('playing');
         this.mistakeCount.set(0);
