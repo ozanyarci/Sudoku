@@ -2,17 +2,19 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BoardComponent } from './components/board/board.component';
 import { ControlsComponent } from './components/controls/controls.component';
+import { AuthComponent } from './components/auth/auth.component';
 import { SudokuService } from './services/sudoku.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, BoardComponent, ControlsComponent],
+  imports: [CommonModule, BoardComponent, ControlsComponent, AuthComponent],
   template: `
     <main class="app-container">
       <header>
         <h1>Sudoku</h1>
         <p class="subtitle">Premium Edition</p>
+        <app-auth></app-auth>
       </header>
       
       <ng-container *ngIf="sudokuService.status() === 'not-started'">

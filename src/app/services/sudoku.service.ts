@@ -1,5 +1,6 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject, effect } from '@angular/core';
 import { SudokuGenerator } from '../utils/sudoku-generator';
+import { SupabaseService } from './supabase.service';
 
 export interface Cell {
     row: number;
@@ -84,8 +85,32 @@ export class SudokuService {
         return counts;
     });
 
+    private supabaseService = inject(SupabaseService);
+
     constructor() {
         this.loadHighScores();
+
+        // Sync scores when login status changes
+        effect(async () => {
+            const session = this.supabaseService.session();
+            if (session) {
+                await this.syncWithSupabase();
+            }
+        });
+    }
+
+    private async syncWithSupabase() {
+        const remoteScores = await this.supabaseService.getScores();
+        if (remoteScores) {
+            const merged = {
+                easy: remoteScores.easy ?? this.highScores().easy,
+                medium: remoteScores.medium ?? this.highScores().medium,
+                hard: remoteScores.hard ?? this.highScores().hard,
+                'very-hard': remoteScores['very-hard'] ?? this.highScores()['very-hard'],
+            };
+            this.highScores.set(merged);
+            this.saveHighScores(); // Update local storage with merged scores
+        }
     }
 
     private loadHighScores() {
@@ -232,6 +257,11 @@ export class SudokuService {
                 [diff]: currentTime
             }));
             this.saveHighScores();
+            
+            // Save to Supabase if logged in
+            if (this.supabaseService.session()) {
+                this.supabaseService.saveScore(diff, currentTime);
+            }
         }
     }
 
