@@ -101,16 +101,51 @@ export class SudokuService {
 
     private async syncWithSupabase() {
         const remoteScores = await this.supabaseService.getScores();
+        const localScores = this.highScores();
+
         if (remoteScores) {
+            // Merge remote and local, keeping the BEST (lowest) time for each
             const merged = {
-                easy: remoteScores.easy ?? this.highScores().easy,
-                medium: remoteScores.medium ?? this.highScores().medium,
-                hard: remoteScores.hard ?? this.highScores().hard,
-                'very-hard': remoteScores['very-hard'] ?? this.highScores()['very-hard'],
+                easy: this.getBetterScore(remoteScores.easy, localScores.easy),
+                medium: this.getBetterScore(remoteScores.medium, localScores.medium),
+                hard: this.getBetterScore(remoteScores.hard, localScores.hard),
+                'very-hard': this.getBetterScore(remoteScores['very-hard'], localScores['very-hard']),
             };
+            
             this.highScores.set(merged);
-            this.saveHighScores(); // Update local storage with merged scores
+            this.saveHighScores();
+
+            // If local was better than remote for any difficulty, update Supabase
+            // This ensures Supabase always has the absolute best scores
+            if (this.isLocalBetter(localScores, remoteScores)) {
+                for (const [diff, score] of Object.entries(localScores)) {
+                    if (score !== null && (remoteScores[diff] === null || score < remoteScores[diff])) {
+                        await this.supabaseService.saveScore(diff, score);
+                    }
+                }
+            }
+        } else {
+            // Supabase record doesn't exist yet, push all existing local high scores
+            console.log('No scores on Supabase, pushing local scores...');
+            for (const [diff, score] of Object.entries(localScores)) {
+                if (score !== null) {
+                    await this.supabaseService.saveScore(diff, score);
+                }
+            }
         }
+    }
+
+    private getBetterScore(s1: number | null, s2: number | null): number | null {
+        if (s1 === null) return s2;
+        if (s2 === null) return s1;
+        return Math.min(s1, s2);
+    }
+
+    private isLocalBetter(local: any, remote: any): boolean {
+        return (local.easy !== null && (remote.easy === null || local.easy < remote.easy)) ||
+               (local.medium !== null && (remote.medium === null || local.medium < remote.medium)) ||
+               (local.hard !== null && (remote.hard === null || local.hard < remote.hard)) ||
+               (local['very-hard'] !== null && (remote['very-hard'] === null || local['very-hard'] < remote['very-hard']));
     }
 
     private loadHighScores() {
