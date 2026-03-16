@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1773598169634,
+  "timestamp": 1773660211248,
   "index": "/Sudoku/index.html",
   "assetGroups": [
     {
@@ -13,7 +13,7 @@
       "urls": [
         "/Sudoku/favicon.ico",
         "/Sudoku/index.html",
-        "/Sudoku/main-H4AWECDP.js",
+        "/Sudoku/main-JOXOTZDL.js",
         "/Sudoku/manifest.webmanifest",
         "/Sudoku/styles-MLFZKC2C.css"
       ],
@@ -50,8 +50,8 @@
     "/Sudoku/icons/icon-512x512.png": "1de182f76f7329dfa8f9fcdd1fdcdd695bea6a99",
     "/Sudoku/icons/icon-72x72.png": "aa88a6096bd973be7f6d7a5489bfa6bc2463f8c4",
     "/Sudoku/icons/icon-96x96.png": "7fb8f59c30ce2ff12c700321a0b39e14b3dc8f95",
-    "/Sudoku/index.html": "2f9b5b2ce1dba35a41e673770ea10d9b8cccd36a",
-    "/Sudoku/main-H4AWECDP.js": "87da12d5825969c76d7519e3a9301014219ed482",
+    "/Sudoku/index.html": "4ba9b2d067280cd760522d8f05c4a9a0c4100347",
+    "/Sudoku/main-JOXOTZDL.js": "6a30746ba16ce897fbf3c7e06434d718b5817b50",
     "/Sudoku/manifest.webmanifest": "7ea9896ae44861ba545a216e7df903e960659a1a",
     "/Sudoku/styles-MLFZKC2C.css": "a42e9a0ee2ef7b2d6cc3c9a35eb8b6ba7a85cdd7"
   },
